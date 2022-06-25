@@ -7,6 +7,7 @@ var playercards = [];
 var dealercards = [];
 var playerNo = 1;
 var noOfPlayers = 0;
+var playerList = [];
 
 var main = function (input) {
   var deck = createDeck();
@@ -19,15 +20,16 @@ var main = function (input) {
       myOutputValue = `Game started with ${input} players and Dealer.`;
       gameMode = "New Player Draw Cards";
       noOfPlayers = input;
+      // add a list of ALL PLAYERS and Dealer
+      for (var i = 1; i <= noOfPlayers; i++) {
+        playerList.push(`Player ${i}`);
+      }
+      playerList.push("Dealer");
     }
   } else if (playerNo <= noOfPlayers && gameMode == "New Player Draw Cards") {
-    var playercards = [];
-    var playerCard1 = shuffledDeck.pop();
-    var playerCard2 = shuffledDeck.pop();
-    playercards.push(playerCard1);
-    playercards.push(playerCard2);
+    var playercards = dealCards(shuffledDeck);
     playerscore = cardScoreCount(playercards);
-    myOutputValue = `Player ${playerNo} drew ${playerCard1.name} and ${playerCard2.name}<br>Total Score :${playerscore}. Hit or Stay? `;
+    myOutputValue = `Player ${playerNo} drew ${playercards[0].name} and ${playercards[1].name}<br>Total Score :${playerscore}. Hit or Stay? `;
     var roundscore = {
       score: playerscore,
       player: `Player ${playerNo}`,
@@ -35,9 +37,29 @@ var main = function (input) {
     gameMode = "Player Hit Stay";
   } else if (playerNo <= noOfPlayers && gameMode == "Player Hit Stay") {
     if (input.toLowerCase() == "hit") {
-      var playerCard3 = shuffledDeck.pop();
-      playerscore += playerCard3.value;
-      myOutputValue = `Player ${playerNo} drew ${playerCard3.name}. Total Score : ${playerscore} <br>Hit or Stay?`;
+      var playerNewCard = shuffledDeck.pop();
+      // if player draws an Ace and scores >21, Ace is reduced to 1 point.
+      if (playerNewCard.rank == 1 && playerscore + playerNewCard.value > 21) {
+        playerNewCard.value = 1;
+      }
+      playerscore += playerNewCard.value;
+      // if player hits and bursts, move on to next player
+      if (playerscore >= 21) {
+        var roundscore = {
+          score: playerscore,
+          player: `Player ${playerNo}`,
+        };
+        roundScores.push(roundscore);
+
+        gameMode = "New Player Draw Cards";
+        myOutputValue = `Player ${playerNo} drew ${playerNewCard.name}. Total Score : ${playerscore} <br>It is ${playerList[playerNo]}'s turn.`;
+        playerNo += 1;
+        if (playerNo > noOfPlayers) {
+          gameMode = "Dealer Draw Card";
+        }
+        return myOutputValue;
+      }
+      myOutputValue = `Player ${playerNo} drew ${playerNewCard.name}. Total Score : ${playerscore} <br>Hit or Stay?`;
       return myOutputValue;
     } else if (input.toLowerCase() != "hit" || playerscore > 21) {
       var roundscore = {
@@ -51,7 +73,7 @@ var main = function (input) {
     if (playerNo > noOfPlayers) {
       gameMode = "Dealer Draw Card";
     }
-  } else if (playerNo > noOfPlayers && gameMode == "Dealer Draw Card") {
+  } else if (playerNo >= noOfPlayers && gameMode == "Dealer Draw Card") {
     var dealercards = [];
     var dealerCard1 = shuffledDeck.pop();
     var dealerCard2 = shuffledDeck.pop();
@@ -60,12 +82,12 @@ var main = function (input) {
     myOutputValue = `Dealer drew ${dealerCard1.name} and ${dealerCard2.name}`;
 
     dealerscore = cardScoreCount(dealercards);
-    if (dealerscore < 17) {
+    do {
       var dealerCard3 = shuffledDeck.pop();
       dealercards.push(dealerCard3);
       dealerscore += dealerCard3.value;
       myOutputValue += ` and ${dealerCard3.name}`;
-    }
+    } while (dealerscore < 17);
     myOutputValue += `<br>Total Score :${dealerscore}. `;
     gameMode = "Decide Winner";
     var roundscore = {
@@ -88,19 +110,7 @@ var main = function (input) {
     } else {
       myOutputValue = `${winners[0].player} has won with ${winners[0].score} points.`;
     }
-    // if (playerscore < 21 && dealerscore > 21) {
-    //   myOutputValue = `Player won.`;
-    // } else if (playerscore > 21 && dealerscore < 21) {
-    //   myOutputValue = `Dealer won.`;
-    // } else if (playerscore > 21 && dealerscore > 21) {
-    //   myOutputValue = `Both Player and Dealer have busted, Tie Game.`;
-    // } else if (playerscore > dealerscore && playerscore <= 21) {
-    //   myOutputValue = `Player won.`;
-    // } else if (dealerscore > playerscore && dealerscore <= 21) {
-    //   myOutputValue = `Dealer won`;
-    // } else if (playerscore == dealerscore) {
-    //   myOutputValue = `Both Player and Dealer have same score, Tie Game.`;
-    // }
+
     gameMode = "waiting to start";
   }
 
@@ -120,6 +130,7 @@ var createDeck = function () {
       };
       if (card.rank == 1) {
         card.name = `Ace of ${suits[i]}`;
+        card.value = 11;
       } else if (card.rank == 11) {
         card.name = `Jack of ${suits[i]}`;
         card.value = 10;
@@ -152,8 +163,16 @@ var shuffleDeck = function (deck) {
 
 var cardScoreCount = function (cards) {
   score = 0;
+  aceCount = 0;
   for (var i = 0; i < cards.length; i++) {
     score += cards[i].value;
+    if (cards[i].rank == 1) {
+      aceCount += 1;
+    }
+  }
+  // if Ace in hand and score bursts (>21), Ace to be counted as 1 point instead of 11
+  if (score > 21 && aceCount > 0) {
+    score -= 10;
   }
   return score;
 };
@@ -180,4 +199,13 @@ var winnerCheck = function (scores) {
     }
   }
   return winners;
+};
+
+var dealCards = function (shuffledDeck) {
+  var playercards = [];
+  var playerCard1 = shuffledDeck.pop();
+  var playerCard2 = shuffledDeck.pop();
+  playercards.push(playerCard1);
+  playercards.push(playerCard2);
+  return playercards;
 };
