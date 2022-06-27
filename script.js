@@ -27,9 +27,9 @@ var main = function (input) {
         playerList.push(`Player ${i}`);
       }
       playerList.push("Dealer");
+      return myOutputValue;
     }
   } else if (playerNo <= noOfPlayers && gameMode == "New Player Draw Cards") {
-    //var playercards = [];
     playercards = dealCards(shuffledDeck);
     playerscore = cardScoreCount(playercards);
     myOutputValue = "";
@@ -45,6 +45,7 @@ var main = function (input) {
     return myOutputValue;
   } else if (playerNo <= noOfPlayers && gameMode == "Player Hit Stay") {
     myOutputValue = "";
+    var showhand = "";
     if (input.toLowerCase() == "hit") {
       //var playercards = dealOneCard(playercards, shuffledDeck);
       var playerNewCard = shuffledDeck.pop();
@@ -65,20 +66,21 @@ var main = function (input) {
         };
         roundScores.push(roundscore);
         console.log(roundscore);
-        for (var i = 0; i < playercards.length; i++) {
-          myOutputValue += `<img class="showcards" src="cards/${playercards[i].image}"style="display:inline-block">`;
-        }
         gameMode = "New Player Draw Cards";
         myOutputValue += `<br>Player ${playerNo} drew ${playerNewCard.name}. Total Score : ${playerscore} <br>It is ${playerList[playerNo]}'s turn.`;
         playerNo += 1;
         if (playerNo > noOfPlayers) {
           gameMode = "Dealer Draw Card";
         }
-        return myOutputValue;
       }
-      myOutputValue = `Player ${playerNo} drew ${playerNewCard.name}. Total Score : ${playerscore} <br>Hit or Stay?`;
+      myOutputValue = `<br>Player ${playerNo} drew ${playerNewCard.name}. Total Score : ${playerscore} <br>Hit or Stay?`;
+      for (var i = 0; i < playercards.length; i++) {
+        showhand += `<img class="showcards" src="cards/${playercards[i].image}"style="display:inline-block">`;
+      }
+      myOutputValue = showhand + myOutputValue;
       return myOutputValue;
-    } else if (input.toLowerCase() != "hit" || playerscore > 21) {
+    } else if (input.toLowerCase() == "stay" || playerscore > 21) {
+      console.log(input);
       var roundscore = {
         score: playerscore,
         player: `Player ${playerNo}`,
@@ -136,7 +138,7 @@ var main = function (input) {
     } else {
       myOutputValue = `${winners[0].player} has won with ${winners[0].score} points.`;
     }
-
+    myOutputValue += `<br>Hit Submit to Start a New Round`;
     gameMode = "Reset Game";
   } else if (gameMode == "Reset Game") {
     round += 1;

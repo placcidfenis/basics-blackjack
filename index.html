@@ -86,6 +86,7 @@
     />
 
     <!-- CSS -->
+    <link rel="stylesheet" href="styles.css" />
     <style>
       * {
         box-sizing: border-box;
@@ -176,6 +177,8 @@
       <input id="input-field" />
       <br />
       <button id="submit-button">Submit</button>
+      <button id="hit-button">Hit</button>
+      <button id="stay-button">Stay</button>
       <p>Output:</p>
       <div id="output-div">How many players?</div>
     </div>
@@ -188,6 +191,32 @@
         // Set result to input value
         var input = document.querySelector("#input-field");
         var result = main(input.value);
+
+        // Display result in output element
+        var output = document.querySelector("#output-div");
+        output.innerHTML = result;
+
+        // Reset input value
+        input.value = "";
+      });
+      var hitbutton = document.querySelector("#hit-button");
+      button.addEventListener("click", function () {
+        // Set result to input value
+        var input = "hit";
+        var result = main(input);
+
+        // Display result in output element
+        var output = document.querySelector("#output-div");
+        output.innerHTML = result;
+
+        // Reset input value
+        input.value = "";
+      });
+      var staybutton = document.querySelector("#stay-button");
+      button.addEventListener("click", function () {
+        // Set result to input value
+        var input = "stay";
+        var result = main(input);
 
         // Display result in output element
         var output = document.querySelector("#output-div");
