@@ -8,6 +8,8 @@ var dealercards = [];
 var playerNo = 1;
 var noOfPlayers = 0;
 var playerList = [];
+var roundCards = [];
+var round = 1;
 
 var main = function (input) {
   var deck = createDeck();
@@ -17,9 +19,9 @@ var main = function (input) {
     if (input < 1 || isNaN(input)) {
       myOutputValue = `Need at least 1 player to start.`;
     } else {
-      myOutputValue = `Game started with ${input} players and Dealer.`;
+      myOutputValue = `Round ${round}: Game started with ${input} players and Dealer.`;
       gameMode = "New Player Draw Cards";
-      noOfPlayers = input;
+      noOfPlayers = Number(input);
       // add a list of ALL PLAYERS and Dealer
       for (var i = 1; i <= noOfPlayers; i++) {
         playerList.push(`Player ${i}`);
@@ -27,22 +29,34 @@ var main = function (input) {
       playerList.push("Dealer");
     }
   } else if (playerNo <= noOfPlayers && gameMode == "New Player Draw Cards") {
-    var playercards = dealCards(shuffledDeck);
+    //var playercards = [];
+    playercards = dealCards(shuffledDeck);
     playerscore = cardScoreCount(playercards);
-    myOutputValue = `Player ${playerNo} drew ${playercards[0].name} and ${playercards[1].name}<br>Total Score :${playerscore}. Hit or Stay? `;
+    myOutputValue = "";
+    for (var i = 0; i < playercards.length; i++) {
+      myOutputValue += `<img class="showcards" src="cards/${playercards[i].image}"style="display:inline-block">`;
+    }
+    myOutputValue += `<br>Player ${playerNo} drew ${playercards[0].name} and ${playercards[1].name}<br>Total Score :${playerscore}. Hit or Stay? `;
     var roundscore = {
       score: playerscore,
       player: `Player ${playerNo}`,
     };
     gameMode = "Player Hit Stay";
+    return myOutputValue;
   } else if (playerNo <= noOfPlayers && gameMode == "Player Hit Stay") {
+    myOutputValue = "";
     if (input.toLowerCase() == "hit") {
+      //var playercards = dealOneCard(playercards, shuffledDeck);
       var playerNewCard = shuffledDeck.pop();
+      playercards.push(playerNewCard);
+
+      // to modify : if player has an ACE and busts, Ace value will = 1
+
       // if player draws an Ace and scores >21, Ace is reduced to 1 point.
       if (playerNewCard.rank == 1 && playerscore + playerNewCard.value > 21) {
         playerNewCard.value = 1;
       }
-      playerscore += playerNewCard.value;
+      playerscore = cardScoreCount(playercards);
       // if player hits and bursts, move on to next player
       if (playerscore >= 21) {
         var roundscore = {
@@ -50,9 +64,12 @@ var main = function (input) {
           player: `Player ${playerNo}`,
         };
         roundScores.push(roundscore);
-
+        console.log(roundscore);
+        for (var i = 0; i < playercards.length; i++) {
+          myOutputValue += `<img class="showcards" src="cards/${playercards[i].image}"style="display:inline-block">`;
+        }
         gameMode = "New Player Draw Cards";
-        myOutputValue = `Player ${playerNo} drew ${playerNewCard.name}. Total Score : ${playerscore} <br>It is ${playerList[playerNo]}'s turn.`;
+        myOutputValue += `<br>Player ${playerNo} drew ${playerNewCard.name}. Total Score : ${playerscore} <br>It is ${playerList[playerNo]}'s turn.`;
         playerNo += 1;
         if (playerNo > noOfPlayers) {
           gameMode = "Dealer Draw Card";
@@ -73,34 +90,43 @@ var main = function (input) {
     if (playerNo > noOfPlayers) {
       gameMode = "Dealer Draw Card";
     }
+    roundCards.push(playercards);
   } else if (playerNo >= noOfPlayers && gameMode == "Dealer Draw Card") {
     var dealercards = [];
     var dealerCard1 = shuffledDeck.pop();
     var dealerCard2 = shuffledDeck.pop();
     dealercards.push(dealerCard1);
     dealercards.push(dealerCard2);
-    myOutputValue = `Dealer drew ${dealerCard1.name} and ${dealerCard2.name}`;
+    myOutputValue = `<br>Dealer drew ${dealerCard1.name} and ${dealerCard2.name}`;
 
     dealerscore = cardScoreCount(dealercards);
-    do {
+
+    while (dealerscore < 17) {
       var dealerCard3 = shuffledDeck.pop();
       dealercards.push(dealerCard3);
       dealerscore += dealerCard3.value;
-      myOutputValue += ` and ${dealerCard3.name}`;
-    } while (dealerscore < 17);
+      myOutputValue += ` and ${dealerCard3.name}<br>`;
+    }
+    var showcards = "";
+    for (var i = 0; i < dealercards.length; i++) {
+      showcards += `<img class="showcards" src="cards/${dealercards[i].image}"style="display:inline-block">`;
+    }
     myOutputValue += `<br>Total Score :${dealerscore}. `;
+    myOutputValue = showcards + myOutputValue;
     gameMode = "Decide Winner";
     var roundscore = {
       score: dealerscore,
       player: "Dealer",
     };
+    roundCards.push(dealercards);
     roundScores.push(roundscore);
+    console.log(roundScores);
   } else if (gameMode == "Decide Winner") {
-    console.log(playerscore, dealerscore);
+    console.log(roundScores);
     var winners = winnerCheck(roundScores);
     console.log(winners);
     if (winners.length == 0) {
-      myOutputValue = `Tie Game. Both Dealer and Player have bust.`;
+      myOutputValue = `Tie Game. Both Dealer and Player(s) have bust.`;
     } else if (winners.length > 1) {
       var addW = "";
       for (var i = 1; i < winners.length; i++) {
@@ -111,9 +137,12 @@ var main = function (input) {
       myOutputValue = `${winners[0].player} has won with ${winners[0].score} points.`;
     }
 
-    gameMode = "waiting to start";
+    gameMode = "Reset Game";
+  } else if (gameMode == "Reset Game") {
+    round += 1;
+    gameReset = resetGame();
+    return gameReset;
   }
-
   return myOutputValue;
 };
 
@@ -127,19 +156,24 @@ var createDeck = function () {
         suit: suits[i],
         name: `${j} of ${suits[i]}`,
         value: j,
+        image: `${j}_of_${suits[i]}.png`,
       };
       if (card.rank == 1) {
         card.name = `Ace of ${suits[i]}`;
         card.value = 11;
+        card.image = `ace_of_${suits[i]}.png`;
       } else if (card.rank == 11) {
         card.name = `Jack of ${suits[i]}`;
         card.value = 10;
+        card.image = `jack_of_${suits[i]}.png`;
       } else if (card.rank == 12) {
         card.name = `Queen of ${suits[i]}`;
         card.value = 10;
+        card.image = `queen_of_${suits[i]}.png`;
       } else if (card.rank == 13) {
         card.name = `King of ${suits[i]}`;
         card.value = 10;
+        card.image = `king_of_${suits[i]}.png`;
       }
       deck.push(card);
     }
@@ -171,16 +205,18 @@ var cardScoreCount = function (cards) {
     }
   }
   // if Ace in hand and score bursts (>21), Ace to be counted as 1 point instead of 11
-  if (score > 21 && aceCount > 0) {
-    score -= 10;
-  }
+  // if (score > 21 && aceCount > 0) {
+  //   score -= 10;
+  // }
   return score;
 };
 
 // check for winner | scores is an array of score and name, returns a list of winners
 var winnerCheck = function (scores) {
+  console.log(scores);
   var highscore = 0;
   var winners = [];
+  var noBust = [];
   sorted = scores
     .sort(function (a, b) {
       return a.score - b.score;
@@ -188,16 +224,19 @@ var winnerCheck = function (scores) {
     .reverse();
   console.log(sorted);
   for (var i = 0; i < sorted.length; i++) {
-    if (sorted[i].score > 21) {
-      sorted.splice(i, 1);
+    if (sorted[i].score <= 21) {
+      noBust.push(sorted[i]);
     }
   }
-  highscore = sorted[0].score;
-  for (var j = 0; j < sorted.length; j++) {
-    if (sorted[j].score == highscore) {
-      winners.push(sorted[j]);
+  if (noBust.length > 0) {
+    highscore = noBust[0].score;
+    for (var j = 0; j < noBust.length; j++) {
+      if (noBust[j].score == highscore) {
+        winners.push(noBust[j]);
+      }
     }
   }
+  console.log(winners);
   return winners;
 };
 
@@ -208,4 +247,21 @@ var dealCards = function (shuffledDeck) {
   playercards.push(playerCard1);
   playercards.push(playerCard2);
   return playercards;
+};
+
+var dealOneCard = function (playercards, cardDeck) {
+  var playerNewCard = cardDeck.pop();
+  playercards.push(playerNewCard);
+  return playercards;
+};
+
+var resetGame = function () {
+  gameMode = "New Player Draw Cards";
+  playerNo = 1;
+  roundCards = [];
+  roundScores = [];
+  playercards = [];
+  dealercards = [];
+  myOutputValue = `Round ${round}: Game started with ${noOfPlayers} players and Dealer.`;
+  return myOutputValue;
 };
