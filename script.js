@@ -171,7 +171,7 @@ var main = function (input) {
       myOutputValue = `The Dealer has busted. <br>Player ${winners[0].player} has won with ${winners[0].score} points. ${addW}`;
     } else if (dealerscore <= 21) {
       if (winners.length > 0 && winners[0].score > dealerscore) {
-        myOutputValue = `<br>Player ${winners[0].player} has won with ${winners[0].score}points. ${addW}`;
+        myOutputValue = `<br>Player ${winners[0].player} has won with ${winners[0].score} points. ${addW}`;
       } else if (winners.length > 0 && winners[0].score == dealerscore) {
         var addW = "";
         for (var i = 1; i < winners.length; i++) {
@@ -187,10 +187,9 @@ var main = function (input) {
     myOutputValue += `<br>Player Scores:`;
     for (var i = 0; i < roundScores.length; i++) {
       var wincondition = "";
-      if (
-        (roundScores[i].score <= 21 && roundScores[i].score > dealerscore) ||
-        (dealerscore > 21 && roundScores[i] <= 21)
-      ) {
+      if (roundScores[i].score <= 21 && roundScores[i].score > dealerscore) {
+        wincondition = `WINS BET`;
+      } else if (dealerscore > 21 && roundScores[i].score <= 21) {
         wincondition = `WINS BET`;
       } else if (
         (roundScores[i].score < 21 && roundScores[i].score < dealerscore) ||
@@ -213,11 +212,12 @@ var main = function (input) {
     gameMode = "Reset Game";
     // if card points > dealer, player wins bet
     for (var i = 0; i < winners.length; i++) {
-      chiplist[winners[i].player - 1] += betlist[winners[i].player - 1] * 2;
+      chiplist[winners[i].player - 1] +=
+        Number(betlist[winners[i].player - 1]) * 2;
     }
     // if same card points as dealer, player breaks even
     for (var k = 0; k < even.length; k++) {
-      chiplist[even[k].player - 1] += betlist[even[k].player - 1];
+      chiplist[even[k].player - 1] += Number(betlist[even[k].player - 1]);
     }
     for (var j = 0; j < chiplist.length; j++) {
       myOutputValue += `Player ${j + 1} : ${chiplist[j]}<br>`;
