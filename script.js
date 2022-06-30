@@ -157,7 +157,7 @@ var main = function (input) {
     winners = winnerCheck(roundScores);
     for (var i = 0; i < winners.length; i++) {
       if (winners[i].score == dealerscore) {
-        even.push(winners.splice(i, 1));
+        even.push(winners.splice(i, 1)[0]);
       }
     }
     var addW = "";
@@ -165,6 +165,9 @@ var main = function (input) {
       addW += `<br>Player ${winners[i].player} has won with ${winners[i].score} points.`;
     }
     if (dealerscore > 21) {
+      if (winners.length == 0) {
+        myOutputValue = `Everyone has busted.`;
+      }
       myOutputValue = `The Dealer has busted. <br>Player ${winners[0].player} has won with ${winners[0].score} points. ${addW}`;
     } else if (dealerscore <= 21) {
       if (winners.length > 0 && winners[0].score > dealerscore) {
@@ -190,7 +193,7 @@ var main = function (input) {
       ) {
         wincondition = `WINS BET`;
       } else if (
-        (roundScores[i].score <= 21 && roundScores[i].score < dealerscore) ||
+        (roundScores[i].score < 21 && roundScores[i].score < dealerscore) ||
         roundScores[i].score > 21
       ) {
         wincondition = `LOSES BET`;
@@ -200,6 +203,7 @@ var main = function (input) {
       ) {
         wincondition = `BREAKS EVEN`;
       }
+
       myOutputValue += `<br>Player ${roundScores[i].player} : ${roundScores[i].score} points | ${wincondition}`;
     }
 
