@@ -98,7 +98,8 @@
         margin-right: 30px;
         background-color: white;
         color: black; /* sets the font color */
-        background-image: url(""); /* The image used */
+        background-image: url(assets/gif.gif); /* The image used */
+
         background-position: center; /* Center the image */
         background-repeat: no-repeat; /* Do not repeat the image */
         background-size: cover; /* Resize the background image to cover the entire container */
@@ -113,10 +114,12 @@
         text-align: center;
         font-size: 1.1rem;
         margin-bottom: 3rem;
+        color: white;
       }
 
       #container {
-        background-color: pink;
+        background-color: rgba(255, 192, 203, 0.3);
+        color: white;
         margin: 40px auto;
         max-width: 800px;
         padding: 38px 31px;
@@ -138,7 +141,7 @@
       }
 
       #output-div {
-        background-color: lightgrey;
+        background-color: rgba(211, 211, 211, 0.186);
         margin: 20px auto;
         padding: 20px;
         width: 100%;
@@ -148,6 +151,10 @@
         height: 49px;
         position: relative;
         top: 22px;
+      }
+      #pause-GIF {
+        position: absolute;
+        right: 0;
       }
 
       /* increase header font size on wider screens */
@@ -160,7 +167,12 @@
   </head>
 
   <body>
+    <audio controls autoplay loop>
+      <source src="assets/backgroundnoise.mp3" />
+    </audio>
+    <button id="pause-GIF">Pause Background</button>
     <h1 class="header">
+      <!--
       <img
         class="logo-img"
         src="https://ra-web-files.s3.ap-southeast-1.amazonaws.com/all/brand/logo.png"
@@ -170,8 +182,8 @@
         class="logo-img"
         src="https://ra-web-files.s3.ap-southeast-1.amazonaws.com/all/brand/logo.png"
       />
-    </h1>
-    <h1 class="header">♣️ Basics - Blackjack ♠️</h1>
+    --></h1>
+    <h1 class="header">♣️ A Backroom Gambling Den ♠️</h1>
     <div id="container">
       <p>Input:</p>
       <input id="input-field" />
@@ -191,6 +203,9 @@
         // Set result to input value
         var input = document.querySelector("#input-field");
         var result = main(input.value);
+        var kaching = new Audio("assets/cashregister.mp3");
+        kaching.volume = 0.1;
+        kaching.play();
 
         // Display result in output element
         var output = document.querySelector("#output-div");
@@ -199,8 +214,8 @@
         // Reset input value
         input.value = "";
       });
-      var hitbutton = document.querySelector("#hit-button");
-      button.addEventListener("click", function () {
+      var hbutton = document.querySelector("#hit-button");
+      hbutton.addEventListener("click", function () {
         // Set result to input value
         var input = "hit";
         var result = main(input);
@@ -212,8 +227,8 @@
         // Reset input value
         input.value = "";
       });
-      var staybutton = document.querySelector("#stay-button");
-      button.addEventListener("click", function () {
+      var sbutton = document.querySelector("#stay-button");
+      sbutton.addEventListener("click", function () {
         // Set result to input value
         var input = "stay";
         var result = main(input);
@@ -224,6 +239,17 @@
 
         // Reset input value
         input.value = "";
+      });
+      var img1 = true;
+      var pauseGIF = document.querySelector("#pause-GIF");
+      pauseGIF.addEventListener("click", function () {
+        if (img1 == true) {
+          document.body.style.backgroundImage = "url(assets/pausegif.gif)";
+          img1 = false;
+        } else {
+          document.body.style.backgroundImage = "url(assets/gif.gif)";
+          img1 = true;
+        }
       });
     </script>
   </body>
